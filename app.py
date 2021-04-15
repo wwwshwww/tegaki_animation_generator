@@ -11,7 +11,7 @@ SAVE_DIR = "./generated"
 if not os.path.isdir(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
-app = Flask(__name__, static_url_path="", static_folder="")
+app = Flask(__name__, static_url_path="", static_folder="generated")
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -25,7 +25,7 @@ def index():
         
         vthresh = 210
         eps = 0.99
-        size = 7
+        size = 4
         movable = 1.5
         std = 0.15
         is_stride = True
@@ -37,8 +37,8 @@ def index():
             create_gif(fp, leaves, fps)
             tmp_address = f'./{fp.name}/{grantor.GIF_DIR}/{fp.name}.gif'
             shutil.copyfile(tmp_address, f'{SAVE_DIR}/{fp.name}.gif')
-            address = os.path.join(f'{SAVE_DIR}/{fp.name}.gif')
-            # address = f'{fp.name}.gif'
+            # address = os.path.join(f'{fp.name}.gif')
+            address = f'{fp.name}.gif'
         
     temp = render_template('index.html', gif=address)
     
