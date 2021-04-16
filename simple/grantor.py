@@ -1,9 +1,18 @@
-from typing import List
 import numpy as np
 import cv2
 from PIL import Image
 import tempfile
-import base64
+import os
+
+vthresh = 210
+eps = 0.99
+size = 7
+movable = 1.5
+std = 0.15
+is_stride = True
+
+IMAGES_DIR = 'images'
+GIF_DIR = 'gif'
 
 MASK_TYPE_CIRCLE = 'circle'
 MASK_TYPE_SQUARE = 'square'
@@ -71,13 +80,33 @@ def kzs(src, thresh=210, eps=0.99, size=7, movable=1.5, std=0.15, is_stride=True
     return grid3
 
 ## make frames into './{tmp}/images/'
-def create_images(src, leaves, thresh, eps, size, movable, std, is_stride) -> List[np.array]:
+def create_images(src, leaves, thresh, eps, size, movable, std, is_stride) -> tempfile.TemporaryDirectory:
     bgra = cv2.imdecode(src, -1)
     if len(bgra[0,0]) == 3:
         tmp_a = np.full_like(bgra[:,:,0], 255, dtype=np.uint8)
         bgra = np.insert(bgra, 3, tmp_a, axis=2)
 
-    return [kzs(bgra, thresh, eps, size, movable, std, is_stride) for _ in range(leaves)]
-    
-def png2b64(images: List[np.array]) -> List[str]:
-    return [base64.b64encode(cv2.imencode('.png', img)[1]).decode('utf-8') for img in images]
+    fp = tempfile.TemporaryDirectory(dir='./')
+    os.mkdir(f'./{fp.name}/{IMAGES_DIR}')
+    images = [kzs(bgra, thresh, eps, size, movable, std, is_stride) for _ in range(leaves)]
+    for i, img in enumerate(images):
+        cv2.imwrite(f'{fp.name}/{IMAGES_DIR}/{fp.name}_{i}.png', img)
+
+    return fp
+
+## make gif that glanted momentum into './{tmp}/gif/
+def create_gif(fp, leaves, fps):
+    images = [None] * leaves
+    for i in range(leaves):
+        img = cv2.imread(f'{fp.name}/{IMAGES_DIR}/{fp.name}_{i}.png')
+        images[i] = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+    os.mkdir(f'./{fp.name}/{GIF_DIR}')
+    images[0].save(
+        f'{fp.name}/{GIF_DIR}/{fp.name}.gif',
+        save_all=True,
+        append_images=images[1:],
+        optimize=False,
+        duration=1000//fps,
+        loop=0
+    )
