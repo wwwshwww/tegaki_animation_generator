@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>Shiveringer</title>
+    <style>
+        .preview{
+            height: auto;
+        }
+        #original_image{
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+
+    <input type="file" id="input" accept="image/png, image/jpeg" />
+    <div id='preview_original'></div>
+    
+    <script>
+        function showPreview(file, width) {
+            const view = document.getElementById('preview_original');
+            if (view.childNodes.length > 0){
+                view.removeChild(document.getElementById('original_image'));
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageURL = e.target.result;
+                const img = document.createElement('img');
+                img.id = 'original_image'
+                img.src = imageURL;
+                img.classList.add('preview')
+                view.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+            
+        }
+
+        const fileInput = document.getElementById('input');
+        const sizeLimit = (1024**2)*8
+        const handle = handleFileSelect = () => {
+            const file = fileInput.files[0]
+            if (file.size > sizeLimit){
+                alert('Over the file upload size limit')
+                fileInput.value = '';
+                return;
+            }
+            showPreview(file, previewWidth)
+        }
+        fileInput.addEventListener('change', handle);
+    </script>
+
+</body>
+
+</html>
