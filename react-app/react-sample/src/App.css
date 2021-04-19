@@ -38,7 +38,7 @@
 }
 
 .preview {
-  width: 100px;
-  height: auto;
-  margin: 10px;
+  width: auto;
+  height: 100px;
+  margin: 30px;
 }
