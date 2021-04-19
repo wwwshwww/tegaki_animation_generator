@@ -21,6 +21,7 @@ const PARAMETER = {
   movable: {default: 1.5, max: 100.0, min: 0.0, step: 0.5, isIntOnly: false},
   std: {default: 0.15, max: 10.0, min: 0.0, step: 0.05, isIntOnly: false},
   is_stride: {default: 1, max: 1, min: 0, step: 1, isIntOnly: true},
+  only_external: {default: 0, max: 1, min: 0, step: 1, isIntOnly: true},
   leaves: {default: 20, max: 40, min: 1, step: 1, isIntOnly: true},
   fps: {default: 30, max: 60, min: 1, step: 1, isIntOnly: true}
 }
@@ -162,7 +163,7 @@ class Uploader extends React.Component{
   }
 
   render() {
-    const genConfigs = ['threshold', 'eps', 'size', 'movable', 'std', 'is_stride']
+    const genConfigs = ['threshold', 'eps', 'size', 'movable', 'std', 'is_stride', 'only_external']
     const aniConfigs = ['leaves', 'fps']
     // const genConfigs = Object.keys(PARAMETER)
     return (
@@ -179,7 +180,6 @@ class Uploader extends React.Component{
             <ArrowRightIcon />
           </Grid>
         </Grid>
-
         <br/>
         <Grid container spacing={2}>
           <Grid item>

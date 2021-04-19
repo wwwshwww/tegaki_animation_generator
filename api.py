@@ -1,7 +1,6 @@
 import os
 from flask import Flask, jsonify, request
 import numpy as np
-import base64
 
 import grantor
 from grantor import create_images, png2b64
@@ -20,6 +19,7 @@ def index():
     movable = 1.5
     std = 0.15
     is_stride = True
+    only_external = False
     leaves = 20
     fps = 30
 
@@ -28,10 +28,9 @@ def index():
 
     if len(img_arr) != 0:
         try:
-            imgs = png2b64(create_images(img_arr, leaves, vthresh, eps, size, movable, std, is_stride))
+            imgs = png2b64(create_images(img_arr, leaves, vthresh, eps, size, movable, std, is_stride, only_external))
             response['num'] = len(imgs)
             response['images'] = imgs
-            
         except:
             response['num'] = 0
             abort = True
