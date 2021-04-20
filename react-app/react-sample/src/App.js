@@ -1,16 +1,13 @@
 import './App.css';
 import React from 'react';
 
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { Grid, Paper, Typography, Button, Divider, Input } from '@material-ui/core';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+import { makeStyles } from '@material-ui/core/styles';
 
 import axios from 'axios';
 
 import { MySlider, MyCheckbox, LoadBackdrop } from './components.js';
-import { Divider } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 
 const SIZE_LIMIT = (1024 ** 2) * 8
 
@@ -48,6 +45,7 @@ function Uploader(props){
   const [result, setResult] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [param, setParam] = React.useState(defaults);
+  const [generatedImages, setGI] = React.useState(null);
 
   const handleChange = (event) => {
     event.preventDefault();
@@ -94,6 +92,17 @@ function Uploader(props){
     setParam({tag: event.target.checked});
   };
 
+  const handleSubmit = () => {
+    axios({
+      method: 'post',
+      url: 'http://localhost:5000',
+      data: {
+        image: base64, 
+        parameter: param
+      }
+    }).then(res => setGI(res));
+  };
+
   const genConfigs = ['threshold', 'eps', 'size', 'movable', 'std']
   const genConfigsBool = ['is_stride', 'only_external']
   const aniConfigs = ['leaves', 'fps']
@@ -102,72 +111,85 @@ function Uploader(props){
   return (
     <div>
       <LoadBackdrop open={loading} />
-      <label>
-        <input type='file' id='input' accept='image/png, image/jpeg' onChange={handleChange} />
-      </label>
-      <Grid container spacing={2} alignItems='center' justify="center">
-        <Grid item>
-          <img src={base64} alt='' className={classes.preview} />
+        <Grid container spacing={1} alignItems='flex-end' justify="center">
+          <Grid item>
+            <label>
+              <Input type='file' color='primary' inputProps={{accept: 'image/png, image/jpeg'}} onChange={handleChange} />
+            </label>
+          </Grid>
+          <Grid item>
+            <Button size='small' variant='contained' onClick={handleSubmit} disabled={base64 == null}>
+              generate
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item>
-          <ArrowRightIcon />
+        <Grid container spacing={2} alignItems='center' justify="center">
+          <Grid item>
+            <img src={base64} alt='' className={classes.preview} />
+          </Grid>
+          <Grid item>
+            <ArrowRightIcon />
+          </Grid>
+          <Grid item>
+          <img src={result} alt='' className={classes.preview} />
+          </Grid>
         </Grid>
-        <Grid item>
-        <img src={result} alt='' className={classes.preview} />
-        </Grid>
-      </Grid>
-      <Divider />
-      <Grid container spacing={2} justify="center">
-        <Grid item>
-          {/* <Typography gutterBottom variant='caption'> */}
-          <Typography gutterBottom className={classes.paramCaption}>
-            Momentum Param
-          </Typography>
-          <Paper>
-          {genConfigs.map((v) => (
-            <MySlider 
-              isIntOnly={PARAMETER[v]['isIntOnly']}
-              default={PARAMETER[v]['default']} 
-              max={PARAMETER[v]['max']} 
-              min={PARAMETER[v]['min']} 
-              step={PARAMETER[v]['step']} 
-              handleBlur={handleBlur} 
-              handleInputChange={handleInputChange} 
-              handleSliderChange={handleSliderChange} 
-              tag={v} 
-              key={v}
-            />
-          ))}
-          {genConfigsBool.map((v) => (
-            <MyCheckbox
-              default={PARAMETER[v]['default']} 
-              handleCheckboxChange={handleCheckboxChange} 
-              tag={v} 
-              key={v}
-            />
-          ))}
-          </Paper>
-        </Grid>
-        <Grid item>
-          <Typography gutterBottom className={classes.paramCaption}>
-            Animation Param
-          </Typography>
-          <Paper>
-          {aniConfigs.map((v) => (
-            <MySlider 
-              isIntOnly={PARAMETER[v]['isIntOnly']}
-              default={PARAMETER[v]['default']} 
-              max={PARAMETER[v]['max']} 
-              min={PARAMETER[v]['min']} 
-              step={PARAMETER[v]['step']} 
-              handleBlur={handleBlur} 
-              handleInputChange={handleInputChange} 
-              handleSliderChange={handleSliderChange} 
-              tag={v}
-              key={v}
-            />
-          ))}
-          </Paper>
+        <Grid container spacing={2} justify="center">
+          <Grid item>
+            <Divider />
+            <Grid container spacing={2} justify="center">
+              <Grid item>
+                {/* <Typography gutterBottom variant='caption'> */}
+                <Typography gutterBottom className={classes.paramCaption}>
+                  Momentum Param
+                </Typography>
+                <Paper>
+                {genConfigs.map((v) => (
+                  <MySlider 
+                    isIntOnly={PARAMETER[v]['isIntOnly']}
+                    default={PARAMETER[v]['default']} 
+                    max={PARAMETER[v]['max']} 
+                    min={PARAMETER[v]['min']} 
+                    step={PARAMETER[v]['step']} 
+                    handleBlur={handleBlur} 
+                    handleInputChange={handleInputChange} 
+                    handleSliderChange={handleSliderChange} 
+                    tag={v} 
+                    key={v}
+                  />
+                ))}
+                {genConfigsBool.map((v) => (
+                  <MyCheckbox
+                    default={PARAMETER[v]['default']} 
+                    handleCheckboxChange={handleCheckboxChange} 
+                    tag={v} 
+                    key={v}
+                  />
+                ))}
+                </Paper>
+              </Grid>
+              <Grid item>
+                <Typography gutterBottom className={classes.paramCaption}>
+                  Animation Param
+                </Typography>
+                <Paper>
+                {aniConfigs.map((v) => (
+                  <MySlider 
+                    isIntOnly={PARAMETER[v]['isIntOnly']}
+                    default={PARAMETER[v]['default']} 
+                    max={PARAMETER[v]['max']} 
+                    min={PARAMETER[v]['min']} 
+                    step={PARAMETER[v]['step']} 
+                    handleBlur={handleBlur} 
+                    handleInputChange={handleInputChange} 
+                    handleSliderChange={handleSliderChange} 
+                    tag={v}
+                    key={v}
+                  />
+                ))}
+              </Paper>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </div>
