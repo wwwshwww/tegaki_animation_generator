@@ -1,5 +1,6 @@
 .App {
-  text-align: center;
+  font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Meiryo", "Yu Gothic", sans-serif;
+  margin: 20px;
 }
 
 .App-logo {
