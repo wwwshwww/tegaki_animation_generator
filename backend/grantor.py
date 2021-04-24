@@ -40,7 +40,18 @@ def grant(canvas, showpiece, contour, eps, mask, movable, std, is_stride):
             canvas_t = canvas[pp[0]-size:pp[0]+size+1, pp[1]-size:pp[1]+size+1]
             canvas_t[mask] = cut[mask]
 
-def kzs(src, thresh=210, eps=0.99, size=7, movable=1.5, std=0.15, is_stride=True, only_external=False):
+def gen_granted_img(canvas_base, showpiece, contours, eps, mask, movable, std, is_stride) -> np.array:
+    np.random.seed()
+    canvas = np.copy(canvas_base)
+    for contour in contours:
+        grant(canvas, showpiece, contour, eps, mask, movable, std, is_stride)
+    
+    return canvas
+
+def manage_gen_granted_img(args):
+    return gen_granted_img(*args)
+
+def get_contours(src, thresh=210, only_external=False):
     ## mode:
     # - all: cv2.RETR_LIST
     # - only external: cv2.RETR_EXTERNAL
@@ -59,9 +70,10 @@ def kzs(src, thresh=210, eps=0.99, size=7, movable=1.5, std=0.15, is_stride=True
     img_cont = np.logical_not(img_cont)
     grid = np.array(img_cont, dtype=np.uint8)
     cont, hie = cv2.findContours(grid, mode=retr_mode, method=cv2.CHAIN_APPROX_NONE)
-    contours = [c.reshape((len(c), 2))[:, ::-1] for c in cont]
-        
-    grid3 = np.copy(img)
+    return [c.reshape((len(c), 2))[:, ::-1] for c in cont]
+
+def kzs(src, contours, leaves, eps=0.99, size=7, movable=1.5, std=0.15, is_stride=True):  
+    grid3 = np.copy(src)
     mask = create_mask(size, MASK_TYPE_CIRCLE)
 
     pad_width = int(size + np.ceil(movable))+1
@@ -69,10 +81,17 @@ def kzs(src, thresh=210, eps=0.99, size=7, movable=1.5, std=0.15, is_stride=True
     grid3 = np.asarray(grid_rgba).transpose(1,2,0)
     pimg = np.copy(grid3)
 
-    for c in contours:
-        grant(grid3, pimg, c+pad_width, eps, mask, movable, std, is_stride)
+    contours_fixed = [contour + pad_width for contour in contours]
+
+    # canvases = [None] * leaves
+    # for i in range(leaves):
+    #     canvases[i] = gen_granted_img(grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride)
+
+    map_args = [[grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride] for _ in range(leaves)]
+    with closing(Pool()) as pool:
+        canvases = pool.map(manage_gen_granted_img, map_args)
         
-    return np.copy(grid3[pad_width:len(grid3)-pad_width, pad_width:len(grid3[0])-pad_width])
+    return np.array(canvases)[:, pad_width:len(grid3)-pad_width, pad_width:len(grid3[0])-pad_width]
 
 ## make frames into './{tmp}/images/'
 def create_images(b64_data: str, leaves: int, thresh: float, eps: float, size: int, movable: float, std: float, is_stride: bool, only_external: bool) -> List[np.array]:
@@ -83,9 +102,12 @@ def create_images(b64_data: str, leaves: int, thresh: float, eps: float, size: i
         tmp_a = np.full_like(bgra[:,:,0], 255, dtype=np.uint8)
         bgra = np.insert(bgra, 3, tmp_a, axis=2)
 
-    return [kzs(bgra, thresh, eps, size, movable, std, is_stride, only_external) for _ in range(leaves)]
+    contours = get_contours(bgra, thresh, only_external)
+    generated_images = kzs(bgra, contours, leaves, eps, size, movable, std, is_stride)
+
+    return list(generated_images)
     
-def png2b64(images: List[np.array]) -> List[str]:
+def png2b64(images) -> List[str]:
     return [base64.b64encode(cv2.imencode('.png', img)[1]).decode('utf-8') for img in images]
 
 def create_b64_apng(frames, fps):
