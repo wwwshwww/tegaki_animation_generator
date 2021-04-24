@@ -247,10 +247,10 @@ function App() {
         <small>Let's generate animation having momentum from single image.</small>
       </header> */}
       <Typography variant='h1' gutterBottom style={text.title}>
-        手書きあにめーたー
+        手描きあにめーたー
       </Typography>
       <Typography variant='h2' gutterBottom style={text.subtitle}>
-        1枚のイラストから手書きっぽいアニメーション（APNG形式）を生成するよ
+        1枚のイラストから手描きっぽいアニメーション（APNG形式）を生成するよ
       </Typography>
       <Uploader />
     </div>
