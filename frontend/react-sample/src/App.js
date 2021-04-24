@@ -34,7 +34,7 @@ const styles = makeStyles({
     textAlign: 'center'
   },
   preview: {
-    width: 210,
+    width: 280,
     height: 'auto', 
     margin: 10
   },
@@ -131,7 +131,8 @@ function Uploader(props){
         image: base64, 
         parameter: param
       };
-      const url = 'http://localhost:5000/get_animation';
+      // const url = 'http://localhost:5000/api/get_animation';
+      const url = 'https://tegaki-animation-generator.herokuapp.com/api/get_animation';
       axios.post(url, data)
         .then(res => {
           setResult('data:image/png;base64,' + res.data.apng);

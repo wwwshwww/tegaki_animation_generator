@@ -1,20 +1,10 @@
 version: '3'
+
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/usr/src/app
-    command: sh -c "cd react-sample && yarn start"
+  app:
+    build: .
     ports:
-      - "3000:3000"
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    volumes:
-      - ./backend:/code
-    command: sh -c "sleep 3 && flask run --host=0.0.0.0 --port=5000"
-    ports:
-      - "5000:5000"
+      - 5000:5000
+    environment:
+      PYTHONPATH: '/app/'
+      PORT: '5000'
