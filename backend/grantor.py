@@ -5,8 +5,10 @@ from apng import APNG, PNG
 import base64
 import json
 
-from multiprocessing import shared_memory, Pool
-from contextlib import closing
+# from multiprocessing import shared_memory, Pool
+# from contextlib import closing
+
+# from concurrent import futures
 
 MASK_TYPE_CIRCLE = 'circle'
 MASK_TYPE_SQUARE = 'square'
@@ -83,13 +85,19 @@ def kzs(src, contours, leaves, eps=0.99, size=7, movable=1.5, std=0.15, is_strid
 
     contours_fixed = [contour + pad_width for contour in contours]
 
-    # canvases = [None] * leaves
-    # for i in range(leaves):
-    #     canvases[i] = gen_granted_img(grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride)
+    canvases = [None] * leaves
+    for i in range(leaves):
+        canvases[i] = gen_granted_img(grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride)
 
-    map_args = [[grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride] for _ in range(leaves)]
-    with closing(Pool()) as pool:
-        canvases = pool.map(manage_gen_granted_img, map_args)
+    ## invalid in heroku
+    # map_args = [[grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride] for _ in range(leaves)]
+    # with closing(Pool()) as pool:
+    #     canvases = pool.map(manage_gen_granted_img, map_args)
+
+    ## baka
+    # with futures.ThreadPoolExecutor() as ex:
+    #     results = ex.map(lambda x: gen_granted_img(*x), ((grid3, pimg, contours_fixed, eps, mask, movable, std, is_stride) for _ in range(leaves)))
+    #     canvases = list(results)
         
     return np.array(canvases)[:, pad_width:len(grid3)-pad_width, pad_width:len(grid3[0])-pad_width]
 
